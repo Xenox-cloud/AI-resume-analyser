@@ -38,7 +38,7 @@ async def analyze(
     record = ResumeAnalysis(
         resume_text=text,
         job_description=job_description,
-        score=80, 
+        score=80,
         feedback=result,
         pi_key=api_key
     )
