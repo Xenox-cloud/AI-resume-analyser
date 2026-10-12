@@ -1,10 +1,12 @@
 from fastapi import Header, HTTPException, status
 import os
+import secrets
 
-API_KEY = os.getenv("API_KEY")
 
 def verify_api_key(x_api_key: str = Header(...)):
-    if x_api_key != API_KEY:
+    expected = os.getenv("API_KEY")
+    # Refuse every request if the server has no key configured, and compare in constant time
+    if not expected or not secrets.compare_digest(x_api_key, expected):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid API Key"

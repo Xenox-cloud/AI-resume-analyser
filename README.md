@@ -60,20 +60,21 @@ resume-analyzer/
 ### 1. Clone the repository
 
 ```
-git clone https://github.com/your-username/ai-resume-analyzer.git
-cd ai-resume-analyzer
+git clone https://github.com/Xenox-cloud/AI-resume-analyser.git
+cd AI-resume-analyser
 ```
 
 ---
 
 ### 2. Create environment variables
 
-Create a `.env` file:
+Copy `.env.example` to `.env` and fill in your own values:
 
 ```
 OPENAI_API_KEY=your_openai_api_key
 API_KEY=your_secure_api_key
-DATABASE_URL=postgresql://postgres:password@localhost:5432/resume_db
+POSTGRES_PASSWORD=change-me
+DATABASE_URL=postgresql://postgres:change-me@localhost:5432/resume_db
 ```
 
 ---
@@ -90,7 +91,7 @@ uvicorn app.main:app --reload
 ### 4. Run with Docker
 
 ```
-docker-compose up --build
+docker compose up --build
 ```
 
 ---
@@ -135,9 +136,14 @@ Analyze a resume against a job description.
 
 ```
 {
-  "analysis": "Match Score: 78\nMissing Skills: ...\nSuggestions: ..."
+  "id": 12,
+  "match_score": 78,
+  "missing_skills": ["Docker", "CI/CD"],
+  "suggestions": ["Quantify the impact of your FastAPI projects"]
 }
 ```
+
+The model is called in JSON mode and its output is validated (score clamped to 0–100) before the score is stored. Non-PDF uploads return `415`; an invalid model response returns `502`.
 
 ---
 
@@ -183,12 +189,25 @@ Returns total number of API requests processed.
 * API keys are stored in environment variables
 * `.env` is excluded from version control
 * Sensitive credentials are never hardcoded
+* API keys are compared in constant time, and every request is refused if no key is configured
+
+---
+
+## 🧪 Tests
+
+The tests fake the LLM call and use SQLite, so they need no OpenAI key or PostgreSQL:
+
+```
+pip install -r requirements.txt -r requirements-dev.txt
+pytest
+```
+
+They cover structured analysis and score storage, API-key checks, PDF validation, the 5/minute rate limit, and parsing of the model's JSON.
 
 ---
 
 ## 📌 Future Improvements
 
-* Structured score extraction from LLM output
 * User-based authentication with JWT
 * Frontend dashboard for analytics
 * Async processing for large files

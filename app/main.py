@@ -1,19 +1,21 @@
-from fastapi import FastAPI, Request
-from slowapi import Limiter
-from slowapi.util import get_remote_address
+from dotenv import load_dotenv
+
+# Load .env before any module reads environment variables
+load_dotenv()
+
+from fastapi import FastAPI
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
 from .database import Base, engine
+from .limiter import limiter
 from .routes import router
 
-def get_api_key(request: Request):
-    return request.headers.get("x-api-key")
-
-limiter = Limiter(key_func=get_api_key)
-
-app = FastAPI()
+app = FastAPI(title="AI Resume Analyzer API")
 
 app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(SlowAPIMiddleware)
 
 Base.metadata.create_all(bind=engine)

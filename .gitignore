@@ -2,3 +2,8 @@
 __pycache__/
 *.pyc
 venv/
+# IDE files and local test artefacts
+.idea/
+.vscode/
+*.db
+.pytest_cache/
